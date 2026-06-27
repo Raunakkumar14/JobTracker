@@ -4,8 +4,10 @@ import os
 from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
-
+load_dotenv(
+    dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'),
+    override=True
+)
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -28,6 +30,18 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+
+def get_url() -> str:
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise RuntimeError(
+            "DATABASE_URL must be set for Alembic migrations."
+            " Set it in .env or your deployment environment."
+        )
+    return url
+
+config.set_main_option("sqlalchemy.url", get_url())
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -38,10 +52,6 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-
-def get_url() -> str:
-    return os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
 
 
 def run_migrations_offline() -> None:
@@ -56,7 +66,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
