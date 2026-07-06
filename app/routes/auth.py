@@ -19,7 +19,7 @@ from app.schema.user import (
 
 router = APIRouter(tags=["Authentication"], prefix="/auth")
 
-OTP_EXPIRY_MINUTES = 10
+
 
 @router.post("/register")
 def register(user: UserCreate,db: Session = Depends(get_db)):
